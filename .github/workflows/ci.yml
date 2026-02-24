@@ -10,13 +10,17 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v3
+      # 1️⃣ Checkout repository
+      - name: Checkout code
+        uses: actions/checkout@v3
 
-      - uses: actions/setup-python@v4
+      # 2️⃣ Setup Python
+      - name: Setup Python
+        uses: actions/setup-python@v4
         with:
           python-version: "3.10"
 
-      # 🔥 Install system dependencies for Manim
+      # 3️⃣ Install system dependencies required by Manim
       - name: Install system dependencies
         run: |
           sudo apt update
@@ -29,10 +33,14 @@ jobs:
             libgl1-mesa-dev \
             libglib2.0-dev
 
+      # 4️⃣ Install Python dependencies
       - name: Install Python dependencies
         run: |
-          pip install --upgrade pip
+          python -m pip install --upgrade pip
           pip install -r requirements.txt
 
+      # 5️⃣ Run tests (fix src layout import issue)
       - name: Run tests
-        run: pytest
+        run: |
+          export PYTHONPATH=$PYTHONPATH:$(pwd)
+          pytest
