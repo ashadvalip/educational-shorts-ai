@@ -1,0 +1,7 @@
+manim
+openai
+networkx
+pydantic
+pytest
+black
+ruff
