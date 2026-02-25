@@ -9,12 +9,14 @@ class DynamicScene(Scene):
         super().__init__(**kwargs)
 
     def construct(self):
-        # -----------------------------
-        # TITLE INTRO
-        # -----------------------------
+        # Title Intro
         self.render_title(self.script.title)
 
         for scene in self.script.scenes:
+
+            subtitle = self.create_subtitle(scene.voiceover)
+
+            self.add(subtitle)
 
             if scene.visual == VisualType.NEURAL_NETWORK:
                 self.render_neural_network(scene.layers, scene.duration)
@@ -25,27 +27,42 @@ class DynamicScene(Scene):
             elif scene.visual == VisualType.TEXT:
                 self.render_text(scene.voiceover, scene.duration)
 
-    # -----------------------------
+            self.remove(subtitle)
+
+    # -------------------------
     # TITLE
-    # -----------------------------
+    # -------------------------
     def render_title(self, title: str):
         title_text = Text(title, font_size=48)
         self.play(FadeIn(title_text))
         self.wait(1.5)
         self.play(FadeOut(title_text))
 
-    # -----------------------------
+    # -------------------------
+    # SUBTITLE
+    # -------------------------
+    def create_subtitle(self, text_content: str):
+        subtitle = Text(
+            text_content,
+            font_size=28,
+            color=WHITE
+        )
+        subtitle.to_edge(DOWN)
+        subtitle.set_opacity(0.9)
+        return subtitle
+
+    # -------------------------
     # TEXT
-    # -----------------------------
+    # -------------------------
     def render_text(self, text_content: str, duration: float):
         text = Text(text_content, font_size=36)
         self.play(Write(text))
         self.wait(duration)
         self.play(FadeOut(text))
 
-    # -----------------------------
+    # -------------------------
     # NEURAL NETWORK
-    # -----------------------------
+    # -------------------------
     def render_neural_network(self, layers: List[int], duration: float):
         network = VGroup()
         edges = VGroup()
@@ -69,7 +86,6 @@ class DynamicScene(Scene):
             neurons.append(layer_group)
             network.add(layer_group)
 
-        # Create edges
         for i in range(len(neurons) - 1):
             for neuron1 in neurons[i]:
                 for neuron2 in neurons[i + 1]:
@@ -81,23 +97,19 @@ class DynamicScene(Scene):
                     )
                     edges.add(line)
 
-        # Animate layer-by-layer
         for layer in neurons:
             self.play(Create(layer), run_time=0.6)
 
         self.play(Create(edges), run_time=1.0)
-
         self.wait(duration)
         self.play(FadeOut(network), FadeOut(edges))
 
-    # -----------------------------
-    # EQUATION (SMART TIMING)
-    # -----------------------------
+    # -------------------------
+    # EQUATION
+    # -------------------------
     def render_equation(self, steps: List[str], total_duration: float):
-
         math_objects = [MathTex(step) for step in steps]
 
-        # Distribute duration evenly across steps
         per_step_time = total_duration / max(len(steps), 1)
 
         self.play(Write(math_objects[0]))
@@ -114,7 +126,6 @@ def render_video(script: Script):
     from manim import config
     import re
 
-    # Clean filename from title
     safe_title = re.sub(r"[^\w\s-]", "", script.title).strip().lower()
     safe_title = re.sub(r"[-\s]+", "_", safe_title)
 
