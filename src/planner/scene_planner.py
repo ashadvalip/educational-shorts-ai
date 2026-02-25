@@ -23,11 +23,6 @@ class Script(BaseModel):
 
 
 def generate_script(topic: str) -> Script:
-    """
-    Deterministic multi-scene script.
-    Includes neural network + animated equation transformation.
-    """
-
     return Script(
         title=f"{topic} Explained",
         scenes=[

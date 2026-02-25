@@ -9,6 +9,11 @@ class DynamicScene(Scene):
         super().__init__(**kwargs)
 
     def construct(self):
+        # -----------------------------
+        # TITLE INTRO
+        # -----------------------------
+        self.render_title(self.script.title)
+
         for scene in self.script.scenes:
 
             if scene.visual == VisualType.NEURAL_NETWORK:
@@ -19,6 +24,15 @@ class DynamicScene(Scene):
 
             elif scene.visual == VisualType.TEXT:
                 self.render_text(scene.voiceover, scene.duration)
+
+    # -----------------------------
+    # TITLE
+    # -----------------------------
+    def render_title(self, title: str):
+        title_text = Text(title, font_size=48)
+        self.play(FadeIn(title_text))
+        self.wait(1.5)
+        self.play(FadeOut(title_text))
 
     # -----------------------------
     # TEXT
@@ -67,39 +81,45 @@ class DynamicScene(Scene):
                     )
                     edges.add(line)
 
-        # Layer-by-layer animation
+        # Animate layer-by-layer
         for layer in neurons:
-            self.play(Create(layer), run_time=0.8)
+            self.play(Create(layer), run_time=0.6)
 
-        self.play(Create(edges), run_time=1.2)
+        self.play(Create(edges), run_time=1.0)
+
         self.wait(duration)
         self.play(FadeOut(network), FadeOut(edges))
 
     # -----------------------------
-    # EQUATION (STEP TRANSFORM)
+    # EQUATION (SMART TIMING)
     # -----------------------------
-    def render_equation(self, steps: List[str], duration: float):
+    def render_equation(self, steps: List[str], total_duration: float):
 
         math_objects = [MathTex(step) for step in steps]
 
-        # Display first equation
-        self.play(Write(math_objects[0]))
-        self.wait(1)
+        # Distribute duration evenly across steps
+        per_step_time = total_duration / max(len(steps), 1)
 
-        # Transform step-by-step
+        self.play(Write(math_objects[0]))
+        self.wait(per_step_time / 2)
+
         for i in range(1, len(math_objects)):
             self.play(Transform(math_objects[0], math_objects[i]))
-            self.wait(1)
+            self.wait(per_step_time / 2)
 
-        self.wait(duration - len(steps))
         self.play(FadeOut(math_objects[0]))
 
 
 def render_video(script: Script):
     from manim import config
+    import re
+
+    # Clean filename from title
+    safe_title = re.sub(r"[^\w\s-]", "", script.title).strip().lower()
+    safe_title = re.sub(r"[-\s]+", "_", safe_title)
 
     config.media_dir = "media"
-    config.output_file = "output_video"
+    config.output_file = safe_title
 
     scene = DynamicScene(script)
     scene.render()
