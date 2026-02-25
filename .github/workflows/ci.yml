@@ -9,6 +9,11 @@ jobs:
   test:
     runs-on: ubuntu-latest
 
+    # 🔐 Environment variables for CI
+    env:
+      OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+      USE_LLM: "false"   # Keep deterministic mode in CI
+
     steps:
       # 1️⃣ Checkout repository
       - name: Checkout code
